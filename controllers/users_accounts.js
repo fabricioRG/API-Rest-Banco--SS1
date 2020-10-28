@@ -35,7 +35,6 @@ const getAccounts = async(req, res) => {
             res.status(200).json(response[0]);
         }
     }
-    return;
 }
 
 const postAccounts = async(req, res) => {
