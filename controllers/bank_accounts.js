@@ -4,6 +4,7 @@ const pool = require('../data/config');
 const getAccounts = async(req, res) => {
 
     let idBankAccount = req.query.id;
+    let idUserAccount = req.query.idUserAccount;
 
     if (idBankAccount) {
         const response = await pool.query('SELECT * FROM BANK_ACCOUNT WHERE id = ?', idBankAccount);
@@ -15,6 +16,15 @@ const getAccounts = async(req, res) => {
             res.status(200).json(response[0][0]);
         }
 
+    } else if (idUserAccount) {
+        const response = await pool.query('SELECT * FROM BANK_ACCOUNT WHERE idUserAccount = ?', idUserAccount);
+
+        if (response[0].length < 1) {
+            const error = JSON.parse('{"id" : 0 }');
+            res.status(200).json(error);
+        } else {
+            res.status(200).json(response[0]);
+        }
     } else {
 
         const response = await pool.query('SELECT * FROM BANK_ACCOUNT');
