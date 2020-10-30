@@ -1,0 +1,135 @@
+DELIMITER //
+
+CREATE PROCEDURE AUTO_CREATE_USER_ACCOUNT(IN name VARCHAR(30), IN userName VARCHAR(20), IN pin INT)
+BEGIN
+INSERT INTO USER_ACCOUNT (name,userName,pin)
+VALUES (name, userName, pin);
+END //
+
+
+--SELECT LAST_INSERT_ID() AS lastInsert;
+--CALL AUTO_CREATE_USER_ACCOUNT('Werner Lopez','wernerLZ','123456789')
+
+DELIMITER //
+
+CREATE PROCEDURE MANUAL_CREATE_USER_ACCOUNT(IN id INT, IN name VARCHAR(30), IN userName VARCHAR(20), 
+	IN createdAt TIMESTAMP, IN updatedAt TIMESTAMP, IN pin INT)
+BEGIN
+INSERT INTO USER_ACCOUNT (id,name,userName,createdAt,updatedAt,pin)
+VALUES (id,name, userName,createdAt,updatedAt, pin);
+END //
+
+--CALL MANUAL_CREATE_USER_ACCOUNT('300000','Vanessa Ramos','VaneR','2020-10-20 20:30:30','2020-10-20 20:30:30','123123123');
+
+DELIMITER //
+
+CREATE PROCEDURE DEFAULT_CREATE_CLIENT_BANK_ACCOUNT(IN idUserAccount INT)
+BEGIN
+INSERT INTO BANK_ACCOUNT(idUserAccount)
+VALUES (idUserAccount);
+END //
+
+--CALL DEFAULT_CREATE_CLIENT_BANK_ACCOUNT('200000');
+
+DELIMITER //
+
+CREATE PROCEDURE DEFAULT_CREATE_ADMIN_BANK_ACCOUNT(IN idUserAccount INT)
+BEGIN
+DECLARE ROLE_ADMIN VARCHAR(10) DEFAULT 'ADMIN';
+INSERT INTO BANK_ACCOUNT(idUserAccount,role)
+VALUES (idUserAccount,ROLE_ADMIN);
+END //
+
+--CALL DEFAULT_CREATE_ADMIN_BANK_ACCOUNT('200000');
+
+DELIMITER //
+
+CREATE PROCEDURE MANUAL_CREATE_CLIENT_BANK_ACCOUNT(IN idUserAccount INT, IN accountType VARCHAR(10), 
+	IN stateAccount VARCHAR(10), IN balance DOUBLE)
+BEGIN
+INSERT INTO BANK_ACCOUNT(idUserAccount,accountType,stateAccount,balance)
+VALUES (idUserAccount,accountType,stateAccount,balance);
+END //
+
+--CALL MANUAL_CREATE_CLIENT_BANK_ACCOUNT('200000','PLUS','ACTIVE','200');
+
+
+DELIMITER //
+
+CREATE PROCEDURE MANUAL_CREATE_ADMIN_BANK_ACCOUNT(IN idUserAccount INT, IN accountType VARCHAR(10), 
+	IN stateAccount VARCHAR(10), IN balance DOUBLE)
+BEGIN
+DECLARE ROLE_ADMIN VARCHAR(10) DEFAULT 'ADMIN';
+INSERT INTO BANK_ACCOUNT(idUserAccount,accountType,role,stateAccount,balance)
+VALUES (idUserAccount,accountType,ROLE_ADMIN,stateAccount,balance);
+END //
+
+--CALL MANUAL_CREATE_ADMIN_BANK_ACCOUNT('200000','BASIC','ACTIVE','200');
+
+DELIMITER //
+
+CREATE PROCEDURE MANUAL_CREATE_BANK_ACCOUNT(IN idUserAccount INT, IN accountType VARCHAR(10), IN role VARCHAR(10), 
+	IN stateAccount VARCHAR(10), IN balance DOUBLE)
+BEGIN
+INSERT INTO BANK_ACCOUNT(idUserAccount,accountType,role,stateAccount,balance)
+VALUES (idUserAccount,accountType,role,stateAccount,balance);
+END //
+
+--CALL MANUAL_CREATE_BANK_ACCOUNT('200000','PREMIUM','CLIENT','ACTIVE','200');
+
+DELIMITER //
+
+CREATE PROCEDURE DEFAULT_CREATE_BANK_ACCOUNT(IN idUserAccount INT, IN accountType VARCHAR(10), IN role VARCHAR(10))
+BEGIN
+INSERT INTO BANK_ACCOUNT(idUserAccount,accountType,role)
+VALUES (idUserAccount,accountType,role);
+END //
+
+--CALL DEFAULT_CREATE_BANK_ACCOUNT('200000','PREMIUM','CLIENT');
+
+DELIMITER //
+
+CREATE PROCEDURE ADD_BANK_MOVEMENT(IN idBankAccount INT, IN movementType VARCHAR(20), IN amount DOUBLE)
+BEGIN
+
+DECLARE actual_amount DOUBLE;
+
+-- SELECT BANK_ACCOUNT.balance
+-- INTO total_balance
+-- FROM BANK_ACCOUNT
+-- WHERE BANK_ACCOUNT.id = NEW.idBankAccount;
+
+
+INSERT INTO BANK_MOVEMENT(idBankAccount,movementType,amount)
+VALUES (idBankAccount,movementType,amount);
+
+END //
+
+--CALL ADD_BANK_MOVEMENT('100008','ACCREDITATION','300');
+
+DELIMITER //
+
+CREATE TRIGGER ACTION_AFTER_BANK_MOVEMENT AFTER INSERT ON BANK_MOVEMENT
+FOR EACH ROW
+BEGIN
+	DECLARE total_balance DOUBLE;
+	DECLARE new_balance DOUBLE;
+	
+	SELECT BANK_ACCOUNT.balance
+	INTO total_balance
+	FROM BANK_ACCOUNT
+	WHERE BANK_ACCOUNT.id = NEW.idBankAccount;
+
+	IF NEW.movementType = 'ACCREDITATION' THEN
+		SET new_balance = total_balance + NEW.amount;
+		UPDATE BANK_ACCOUNT
+		SET balance = new_balance
+		WHERE BANK_ACCOUNT.id = NEW.idBankAccount;
+	ELSEIF NEW.movementType = 'RETIREMENT' THEN
+		SET new_balance = total_balance - NEW.amount;
+		UPDATE BANK_ACCOUNT
+		SET balance = new_balance
+		WHERE BANK_ACCOUNT.id = NEW.idBankAccount;
+	END IF;
+
+END;//

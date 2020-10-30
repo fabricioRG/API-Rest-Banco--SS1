@@ -55,7 +55,29 @@ const postAccounts = async(req, res) => {
 
 }
 
+const postUpdateAccount = async(req, res) => {
+
+    let id = req.body.id;
+    let name = req.body.name;
+
+    if (id && name) {
+        const response = await pool.query('UPDATE USER_ACCOUNT SET name = ? WHERE id = ? ', [name, id]);
+        if (response[0].length < 1) {
+            const emptyAns = JSON.parse('{"result" : 0 }');
+            res.status(200).json(emptyAns);
+        } else {
+            const ans = JSON.parse('{"result" : ' + response[0].affectedRows + '}')
+            res.status(200).json(ans);
+        }
+    } else {
+        const emptyAns = JSON.parse('{"result" : 0 }');
+        res.status(200).json(emptyAns);
+    }
+
+}
+
 module.exports = {
     getAccounts,
     postAccounts,
+    postUpdateAccount,
 }

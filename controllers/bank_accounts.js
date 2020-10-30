@@ -48,12 +48,57 @@ const postAccounts = async(req, res) => {
             const emptyAns = JSON.parse('{"id" : 0 }');
             res.status(200).json(emptyAns);
         } else {
+            res.status(200).json(response[0][0]);
+        }
+    } else {
+        const emptyAns = JSON.parse('{"e" : 1 }');
+        res.status(200).json(emptyAns);
+    }
+}
+
+//UPDATED
+const postRemoveAccount = async(req, res) => {
+    let id = req.body.id;
+
+    if (id) {
+        const response = await pool.query('UPDATE BANK_ACCOUNT SET stateAccount = \'INACTIVE\' WHERE id = ? ', [id]);
+        if (response[0].length < 1) {
+            const emptyAns = JSON.parse('{"result" : 0 }');
+            res.status(200).json(emptyAns);
+        } else {
+            const ans = JSON.parse('{"result" : ' + response[0].affectedRows + '}')
+                // console.log(response[0].affectedRows)
+            res.status(200).json(ans);
+        }
+    } else {
+        const emptyAns = JSON.parse('{"result" : 0 }');
+        res.status(200).json(emptyAns);
+    }
+}
+
+const postUpdateAccount = async(req, res) => {
+    let id = req.body.id;
+    let accountType = req.body.accountType;
+
+    if (id && accountType) {
+        const response = await pool.query('SELECT UPDATE_BANK_ACCOUNT_TYPE(?,?) as result', [id, accountType]);
+        if (response[0].length < 1) {
+            const emptyAns = JSON.parse('{"result" : 0 }');
+            res.status(200).json(emptyAns);
+        } else {
+            // const ans = JSON.parse('{"result" : ' + response[0][0] + '}')
+            // console.log(response[0].affectedRows)
             res.status(200).json(response[0]);
         }
+    } else {
+        const emptyAns = JSON.parse('{"result" : 0 }');
+        res.status(200).json(emptyAns);
     }
 }
 
 module.exports = {
     getAccounts,
     postAccounts,
+    postRemoveAccount,
+    postUpdateAccount,
 }
